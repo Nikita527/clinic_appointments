@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 
 import pytest
-from httpx import AsyncClient
 from dateutil.parser import isoparse
+from httpx import AsyncClient
 
 
 @pytest.mark.asyncio
