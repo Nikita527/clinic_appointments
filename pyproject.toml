@@ -1,0 +1,39 @@
+[project]
+name = "clinic-appointments"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aioredis>=2.0.1",
+    "alembic>=1.16.2",
+    "asyncpg>=0.30.0",
+    "bcrypt<4.0.0",
+    "fastapi>=0.115.14",
+    "httpx>=0.28.1",
+    "jose>=1.0.0",
+    "jwt>=1.4.0",
+    "passlib>=1.7.4",
+    "pydantic-settings>=2.10.1",
+    "pydantic[email]>=2.11.7",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.0.0",
+    "python-dateutil>=2.9.0.post0",
+    "python-jose[cryptography]>=3.5.0",
+    "python-multipart>=0.0.20",
+    "ruff>=0.12.1",
+    "sqlalchemy>=2.0.41",
+    "uvicorn>=0.34.3",
+    "websockets>=15.0.1",
+]
+
+# Ruff полностью заменяет black, isort, flake8 (см. https://docs.astral.sh/ruff/)
+[tool.ruff]
+line-length = 79
+
+[tool.ruff.lint]
+extend-select = ["I"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

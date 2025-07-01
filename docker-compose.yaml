@@ -1,0 +1,31 @@
+networks:
+  clinic_appointments:
+
+services:
+  clinic_db:
+    image: postgres:16.0-alpine
+    ports:
+      - "5432:5432"
+    env_file:
+      - .env
+    volumes:
+      - clinic_db_data:/var/lib/postgresql/data
+    networks:
+      - clinic_appointments
+
+  api:
+    container_name: clinic_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    depends_on:
+      - clinic_db
+    networks:
+      - clinic_appointments
+
+volumes:
+  clinic_db_data:
