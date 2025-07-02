@@ -1,81 +1,57 @@
-import os
 from uuid import uuid4
 
-import pytest_asyncio
-from httpx import AsyncClient
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+import pytest
+from fastapi.testclient import TestClient
 
-from src.models.base import Base
-from src.repositories.doctor import Doctor
-from src.repositories.users import User
-from src.schemas.doctor import DoctorCreate
-from src.schemas.user import UserCreate
-from src.services.user import UserService
-
-POSTGRES_HOST = os.getenv("POSTGRES_HOST_FOR_TESTS", "localhost")
-POSTGRES_USER = os.getenv("POSTGRES_USER", "postgres")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD", "postgres")
-POSTGRES_DB = os.getenv("POSTGRES_DB", "postgres")
-POSTGRES_PORT = os.getenv("POSTGRES_PORT", "5432")
-DATABASE_URL = (
-    f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}"
-    f"@{POSTGRES_HOST}:{POSTGRES_PORT}/{POSTGRES_DB}"
-)
+from src.core.auth import get_current_user
+from src.main import app
 
 
-@pytest_asyncio.fixture
-def anyio_backend():
-    return "asyncio"
+@pytest.fixture(autouse=True, scope="session")
+def override_get_current_user():
+    """Переопределение зависимости get_current_user."""
+
+    async def fake_user():
+        class User:
+            id = 1
+            email = "test@example.com"
+
+        return User()
+
+    app.dependency_overrides[get_current_user] = fake_user
+    yield
+    app.dependency_overrides = {}
 
 
-@pytest_asyncio.fixture
-async def async_engine():
-    engine = create_async_engine(DATABASE_URL, future=True)
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    yield engine
-    await engine.dispose()
+@pytest.fixture(scope="module")
+def client():
+    """Клиент для тестирования."""
+    with TestClient(app) as ac:
+        yield ac
 
 
-@pytest_asyncio.fixture
-async def async_session(async_engine):
-    async_session = sessionmaker(
-        async_engine, expire_on_commit=False, class_=AsyncSession
-    )
-    async with async_session() as session:
-        yield session
+@pytest.fixture
+def test_user(client):
+    user_data = {
+        "first_name": "Test",
+        "last_name": "User",
+        "email": f"testuser_{uuid4()}@example.com",
+        "password": "testpassword",
+    }
+    resp = client.post("/api/v1/auth/register", json=user_data)
+    assert resp.status_code == 200
+    user_id = resp.json()["id"]
+    return {"id": user_id, "email": user_data["email"]}
 
 
-@pytest_asyncio.fixture
-async def test_user_token(async_session):
-    user_repo = User(async_session)
-    user_service = UserService(user_repo)
-    user_in = UserCreate(
-        first_name="Test",
-        last_name="User",
-        email=f"testuser_{uuid4()}@example.com",
-        password="testpassword",
-    )
-    await user_service.create_user(user_in)
-    async with AsyncClient(base_url="http://localhost:8000") as ac:
-        # Получить токен
-        resp = await ac.post(
-            "/api/v1/auth/login",
-            data={
-                "username": user_in.email,
-                "password": user_in.password,
-            },
-        )
-        assert resp.status_code == 200
-        return resp.json()["access_token"]
-
-
-@pytest_asyncio.fixture
-async def test_doctor(async_session):
-    doctor_repo = Doctor(async_session)
-    doctor_in = DoctorCreate(
-        first_name="Doc", last_name=f"Test{uuid4()}", specialization="Терапевт"
-    )
-    doctor = await doctor_repo.create(doctor_in)
-    return doctor
+@pytest.fixture
+def test_doctor(client):
+    """Создание тестового врача."""
+    doctor_data = {
+        "first_name": "Doc",
+        "last_name": f"Test{uuid4()}",
+        "specialization": "Терапевт",
+    }
+    resp = client.post("/api/v1/doctors/create", json=doctor_data)
+    assert resp.status_code == 201
+    return type("Doctor", (), {"id": resp.json()["id"]})()

@@ -14,10 +14,24 @@ from src.core.config import settings
 from src.db.session import get_session
 from src.repositories.users import User
 from src.schemas.auth import TokenPair, TokenRefresh
-from src.schemas.user import UserRead
+from src.schemas.user import UserCreate, UserRead
 from src.services.user import UserService
 
-router = APIRouter(prefix="/auth", tags=["auth"])
+router = APIRouter(prefix="/auth", tags=["Аутентификация"])
+
+
+@router.post(
+    "/register",
+    response_model=UserRead,
+    summary="Регистрация нового пользователя",
+)
+async def register(
+    user_in: UserCreate, session: AsyncSession = Depends(get_session)
+):
+    """Регистрация нового пользователя."""
+    user_repo = User(session)
+    user_service = UserService(user_repo)
+    return await user_service.create_user(user_in)
 
 
 @router.post("/login", response_model=TokenPair, summary="Авторизация")

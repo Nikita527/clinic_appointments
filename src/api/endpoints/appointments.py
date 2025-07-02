@@ -19,7 +19,10 @@ def get_appointment_service(
 
 
 @router.post(
-    "", response_model=AppointmentRead, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=AppointmentRead,
+    status_code=status.HTTP_201_CREATED,
+    summary="Создание записи к врачу",
 )
 async def create_appointment(
     appointment_in: AppointmentCreate,
@@ -39,7 +42,12 @@ async def create_appointment(
     return appointment
 
 
-@router.get("/{appointment_id}", response_model=AppointmentRead)
+@router.get(
+    "/{appointment_id}",
+    response_model=AppointmentRead,
+    summary="Получение записи к врачу по идентификатору",
+    description="Можно получить только свои записи.",
+)
 async def get_appointment(
     appointment_id: int,
     current_user=Depends(get_current_user),

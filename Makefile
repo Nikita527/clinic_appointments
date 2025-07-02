@@ -8,7 +8,7 @@ run:
 	uvicorn src.main:app --reload
 
 test:
-	pytest
+	docker compose exec api pytest
 
 migrate:
 	docker compose exec api alembic upgrade head
