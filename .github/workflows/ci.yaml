@@ -43,6 +43,21 @@ jobs:
         run: |
           ruff check .
           ruff format --check .
+      - name: Copy env
+        run: cp .env.example .env
+
+      - name: Set test env
+        run: |
+          echo "postgres_host=clinic_db" >> $GITHUB_ENV
+          echo "postgres_port=5432" >> $GITHUB_ENV
+          echo "postgres_user=postgres" >> $GITHUB_ENV
+          echo "postgres_password=postgres" >> $GITHUB_ENV
+          echo "postgres_db=postgres" >> $GITHUB_ENV
+          echo "debug=True" >> $GITHUB_ENV
+          echo "secret_key=supersecret" >> $GITHUB_ENV
+          echo "algorithm=HS256" >> $GITHUB_ENV
+          echo "access_token_expire_minutes=30" >> $GITHUB_ENV
+          echo "refresh_token_expire_days=7" >> $GITHUB_ENV
 
       - name: Test
         run: pytest
