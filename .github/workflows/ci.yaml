@@ -46,7 +46,7 @@ jobs:
 
       - name: Set test env
         run: |
-          echo "postgres_host=clinic_db" >> $GITHUB_ENV
+          echo "postgres_host=localhost" >> $GITHUB_ENV
           echo "postgres_port=5432" >> $GITHUB_ENV
           echo "postgres_user=postgres" >> $GITHUB_ENV
           echo "postgres_password=postgres" >> $GITHUB_ENV
