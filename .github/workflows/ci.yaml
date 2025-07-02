@@ -57,5 +57,8 @@ jobs:
           echo "access_token_expire_minutes=30" >> $GITHUB_ENV
           echo "refresh_token_expire_days=7" >> $GITHUB_ENV
 
+      - name: Run migrations
+        run: alembic upgrade head
+
       - name: Test
         run: pytest
