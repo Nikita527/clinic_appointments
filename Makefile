@@ -1,3 +1,12 @@
+help:
+	@echo "Usage: make [up|down|run|test|migrate|lint]"
+	@echo "up - start docker containers"
+	@echo "down - stop docker containers and remove volumes"
+	@echo "run - run uvicorn for local development"
+	@echo "test - run pytest in docker container"
+	@echo "migrate - run alembic migrations in docker container"
+	@echo "lint - run ruff for linting"
+
 up:
 	docker-compose up -d --build
 
