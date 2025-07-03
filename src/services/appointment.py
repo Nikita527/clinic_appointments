@@ -1,19 +1,21 @@
 from datetime import datetime, timezone
+from typing import Optional
 
 from sqlalchemy.exc import IntegrityError
 
-from src.repositories.appointment import Appointment
+from src.models.appoitment import Appointment
+from src.repositories.appointment import Appointment as AppointmentRepo
 from src.schemas.appointment import AppointmentCreate
 
 
 class AppointmentService:
-    def __init__(self, repo: Appointment):
+    def __init__(self, repo: AppointmentRepo) -> None:
         """Инициализация сервиса."""
         self.repo = repo
 
     async def create_appointment(
         self, user_id: int, appointment_in: AppointmentCreate
-    ):
+    ) -> Appointment:
         """Создание записи к врачу(бизнес логика)."""
         now = datetime.now(timezone.utc)
         if appointment_in.start_time < now:
@@ -39,6 +41,8 @@ class AppointmentService:
             # Можно логировать, отправлять метрики и т.д.
             raise
 
-    async def get_appointment(self, appointment_id: int):
+    async def get_appointment(
+        self, appointment_id: int
+    ) -> Optional[Appointment]:
         """Получение записи к врачу(бизнес логика)."""
         return await self.repo.get_by_id(appointment_id)

@@ -8,7 +8,7 @@ from src.services.appointment import AppointmentService
 
 
 @pytest.mark.asyncio
-async def test_create_appointment_success():
+async def test_create_appointment_success() -> None:
     """Проверка создания записи к врачу."""
     repo_mock = MagicMock()
     repo_mock.get_overlapping_appointments = AsyncMock(return_value=None)
@@ -31,12 +31,16 @@ async def test_create_appointment_success():
 
 
 @pytest.mark.asyncio
-async def test_create_appointment_overlap():
+async def test_create_appointment_overlap() -> None:
     """Проверка создания записи к врачу при пересечении."""
     repo_mock = MagicMock()
     repo_mock.get_overlapping_appointments = AsyncMock(return_value="exists")
     service = AppointmentService(repo_mock)
-    appointment_in = AppointmentCreate(doctor_id=1, start_time=10, end_time=11)
+    start_time = datetime.now(timezone.utc) + timedelta(days=1)
+    end_time = start_time + timedelta(minutes=30)
+    appointment_in = AppointmentCreate(
+        doctor_id=1, start_time=start_time, end_time=end_time
+    )
 
     with pytest.raises(ValueError):
         await service.create_appointment(

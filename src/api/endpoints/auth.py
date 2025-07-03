@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
@@ -26,8 +27,9 @@ router = APIRouter(prefix="/auth", tags=["Аутентификация"])
     summary="Регистрация нового пользователя",
 )
 async def register(
-    user_in: UserCreate, session: AsyncSession = Depends(get_session)
-):
+    user_in: UserCreate,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> UserRead:
     """Регистрация нового пользователя."""
     user_repo = User(session)
     user_service = UserService(user_repo)
@@ -38,7 +40,7 @@ async def register(
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session),
-):
+) -> dict[str, str]:
     """Аутентификация пользователя."""
     user_repo = User(session)
     user_service = UserService(user_repo)
@@ -61,8 +63,9 @@ async def login(
 
 @router.post("/refresh", summary="Обновление access token")
 async def refresh_token(
-    data: TokenRefresh, session: AsyncSession = Depends(get_session)
-):
+    data: TokenRefresh,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> dict[str, str]:
     """
     Получение нового access token.
 
@@ -74,7 +77,7 @@ async def refresh_token(
             settings.secret_key,
             algorithms=[settings.algorithm],
         )
-        email: str = payload.get("sub")
+        email = payload.get("sub")
         if email is None:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -116,6 +119,6 @@ async def refresh_token(
 )
 async def read_current_user(
     current_user: UserRead = Depends(get_current_user),
-):
+) -> UserRead:
     """Возвращает данные текущего аутентифицированного пользователя."""
     return current_user

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta, timezone
-from typing import Optional
+from typing import Annotated, Any, Optional
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -14,9 +14,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login")
 
 
 async def get_current_user(
-    token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(get_session),
-):
+    token: Annotated[str, Depends(oauth2_scheme)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> User:
     """Получение текущего пользователя."""
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -24,23 +24,25 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     try:
-        payload = jwt.decode(
+        payload: dict[str, Any] = jwt.decode(
             token, settings.secret_key, algorithms=[settings.algorithm]
         )
-        user_id: int = payload.get("sub")
+        user_id: Optional[str] = payload.get("sub")
         if user_id is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
-    user = await session.get(User, int(user_id))
+    user: Optional[User] = await session.get(User, int(user_id))
     if user is None:
         raise credentials_exception
     return user
 
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(
+    data: dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """Создает JWT токен."""
-    to_encode = data.copy()
+    to_encode: dict[str, Any] = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
@@ -55,10 +57,10 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 
 def create_refresh_token(
-    data: dict, expires_delta: Optional[timedelta] = None
-):
+    data: dict[str, Any], expires_delta: Optional[timedelta] = None
+) -> str:
     """Создает JWT refresh токен."""
-    to_encode = data.copy()
+    to_encode: dict[str, Any] = data.copy()
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:

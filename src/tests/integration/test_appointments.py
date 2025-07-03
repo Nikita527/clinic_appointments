@@ -4,11 +4,14 @@ from dateutil.parser import isoparse
 from fastapi.testclient import TestClient
 
 from src.main import app
+from src.models.doctor import Doctor
 
 client = TestClient(app)
 
 
-def test_create_and_get_appointment(client, test_user, test_doctor):
+def test_create_and_get_appointment(
+    client: TestClient, test_user: dict[str, str], test_doctor: Doctor
+) -> None:
     """Проверка создания и получения записи к врачу."""
     tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
     start_time = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)
@@ -29,10 +32,14 @@ def test_create_and_get_appointment(client, test_user, test_doctor):
     assert resp2.status_code == 200
     data2 = resp2.json()
     assert data2["doctor_id"] == payload["doctor_id"]
-    assert isoparse(data2["start_time"]) == isoparse(payload["start_time"])
+    assert isoparse(str(data2["start_time"])) == isoparse(
+        str(payload["start_time"])
+    )
 
 
-def test_cannot_create_in_past(client, test_doctor, test_user):
+def test_cannot_create_in_past(
+    client: TestClient, test_doctor: Doctor, test_user: dict[str, str]
+) -> None:
     """Проверка запрета создания записи в прошлом."""
     past = datetime.now(timezone.utc) - timedelta(days=1)
     start_time = past.replace(hour=12, minute=0, second=0, microsecond=0)
@@ -47,7 +54,9 @@ def test_cannot_create_in_past(client, test_doctor, test_user):
     assert resp.status_code == 400
 
 
-def test_cannot_create_with_end_before_start(client, test_doctor, test_user):
+def test_cannot_create_with_end_before_start(
+    client: TestClient, test_doctor: Doctor, test_user: dict[str, str]
+) -> None:
     """Проверка запрета создания записи с концом раньше начала."""
     tomorrow = datetime.now(timezone.utc) + timedelta(days=1)
     start_time = tomorrow.replace(hour=12, minute=0, second=0, microsecond=0)

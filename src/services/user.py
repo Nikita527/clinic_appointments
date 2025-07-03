@@ -1,5 +1,8 @@
+from typing import Optional
+
 from passlib.context import CryptContext
 
+from src.models.users import User as UserModel
 from src.repositories.users import User
 from src.schemas.user import UserCreate
 
@@ -13,12 +16,14 @@ class UserService:
         """Инициализация сервиса."""
         self.repo = repo
 
-    async def authenticate_user(self, email: str, password: str):
+    async def authenticate_user(
+        self, email: str, password: str
+    ) -> Optional[UserModel]:
         """Проверяет логин и пароль пользователя."""
         user = await self.repo.get_by_email(email)
         if not user:
             return None
-        if not pwd_context.verify(password, user.hashed_password):
+        if not pwd_context.verify(password, str(user.hashed_password)):
             return None
         return user
 

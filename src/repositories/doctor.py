@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from src.models.doctor import Doctor as DoctorModel
-from src.schemas.doctor import DoctorRead
+from src.schemas.doctor import DoctorCreate
 
 
 class Doctor:
@@ -26,7 +26,7 @@ class Doctor:
         )
         return result.scalars().first()
 
-    async def create(self, doctor_in: DoctorRead) -> DoctorModel:
+    async def create(self, doctor_in: DoctorCreate) -> DoctorModel:
         """Создание врача."""
         doctor = DoctorModel(
             first_name=doctor_in.first_name,

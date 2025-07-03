@@ -1,3 +1,4 @@
+from typing import Generator
 from uuid import uuid4
 
 import pytest
@@ -5,13 +6,16 @@ from fastapi.testclient import TestClient
 
 from src.core.auth import get_current_user
 from src.main import app
+from src.models.doctor import Doctor
 
 
 @pytest.fixture(autouse=True, scope="session")
-def override_get_current_user():
+def override_get_current_user() -> Generator[None, None, None]:
     """Переопределение зависимости get_current_user."""
 
-    async def fake_user():
+    async def fake_user() -> object:
+        """Фейковый пользователь."""
+
         class User:
             id = 1
             email = "test@example.com"
@@ -24,14 +28,15 @@ def override_get_current_user():
 
 
 @pytest.fixture(scope="module")
-def client():
+def client() -> Generator[TestClient, None, None]:
     """Клиент для тестирования."""
     with TestClient(app) as ac:
         yield ac
 
 
 @pytest.fixture
-def test_user(client):
+def test_user(client: TestClient) -> dict[str, str]:
+    """Создание тестового пользователя."""
     user_data = {
         "first_name": "Test",
         "last_name": "User",
@@ -45,7 +50,7 @@ def test_user(client):
 
 
 @pytest.fixture
-def test_doctor(client):
+def test_doctor(client: TestClient) -> Doctor:
     """Создание тестового врача."""
     doctor_data = {
         "first_name": "Doc",

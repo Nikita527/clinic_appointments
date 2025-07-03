@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional, Sequence
 
 from sqlalchemy.exc import IntegrityError
@@ -33,8 +34,8 @@ class Appointment:
     async def get_overlapping_appointments(
         self,
         doctor_id: int,
-        start_time: int,
-        end_time: int,
+        start_time: datetime,
+        end_time: datetime,
     ) -> Optional[AppointmentModel]:
         """Получение пересекающихся записей к врачу."""
         result = await self.session.execute(

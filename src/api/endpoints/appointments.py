@@ -1,20 +1,25 @@
+from typing import Annotated
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.auth import get_current_user
 from src.db.session import get_session
-from src.repositories.appointment import Appointment
+from src.models.appoitment import Appointment
+from src.repositories.appointment import Appointment as AppointmentRepo
 from src.schemas.appointment import AppointmentCreate, AppointmentRead
+from src.schemas.user import UserRead
 from src.services.appointment import AppointmentService
 
 router = APIRouter(prefix="/appointments", tags=["Запись на прием к врачу"])
 
 
 def get_appointment_service(
-    session: AsyncSession = Depends(get_session),
+    session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AppointmentService:
     """Получение сервиса для работы с записями к врачу."""
-    repo = Appointment(session)
+    repo = AppointmentRepo(session)
     return AppointmentService(repo)
 
 
@@ -26,18 +31,23 @@ def get_appointment_service(
 )
 async def create_appointment(
     appointment_in: AppointmentCreate,
-    current_user=Depends(get_current_user),
+    current_user: UserRead = Depends(get_current_user),
     service: AppointmentService = Depends(get_appointment_service),
-):
+) -> Appointment:
     """Создание записи к врачу."""
     try:
         appointment = await service.create_appointment(
             current_user.id, appointment_in
         )
-    except Exception:
+    except IntegrityError:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="На выбранное время уже есть запись к этому врачу.",
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
         )
     return appointment
 
@@ -50,9 +60,9 @@ async def create_appointment(
 )
 async def get_appointment(
     appointment_id: int,
-    current_user=Depends(get_current_user),
+    current_user: UserRead = Depends(get_current_user),
     service: AppointmentService = Depends(get_appointment_service),
-):
+) -> Appointment:
     """Получение записи к врачу."""
     appointment = await service.get_appointment(appointment_id)
     if not appointment:
