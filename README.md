@@ -49,3 +49,17 @@ make up
 ```
 - В отчёте htmlmypy/index.html:  
   Total 9.88% imprecise, 962 LOC (т.е. покрытие 90.12%)
+
+## Бонус: Kubernetes-манифест для деплоя
+
+Приложение можно развернуть в Kubernetes:
+
+```bash
+kubectl apply -f k8s/
+
+kubectl port-forward svc/clinic-app 8000:8000
+```
+
+## Бонус: CI собирает и пушит Docker-образ
+
+Реализована сборка Docker-образа с помощью GitHub Actions и пуш в мой репозиторий на DockerHub.

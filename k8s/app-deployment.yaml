@@ -48,3 +48,5 @@ spec:
               value: "30"
             - name: REFRESH_TOKEN_EXPIRE_DAYS
               value: "7"
+            - name: DEBUG
+              value: "True"
