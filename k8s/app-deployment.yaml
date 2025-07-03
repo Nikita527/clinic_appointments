@@ -1,0 +1,50 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clinic-app
+spec:
+  ports:
+    - port: 8000
+      targetPort: 8000
+  selector:
+    app: clinic-app
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinic-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: clinic-app
+  template:
+    metadata:
+      labels:
+        app: clinic-app
+    spec:
+      containers:
+        - name: clinic-app
+          image: nikitasalikov/clinic-appointments:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: POSTGRES_HOST
+              value: postgres
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_USER
+              value: clinic
+            - name: POSTGRES_PASSWORD
+              value: clinic
+            - name: POSTGRES_DB
+              value: clinic
+            - name: SECRET_KEY
+              value: my-secret-key
+            - name: ALGORITHM
+              value: HS256
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              value: "30"
+            - name: REFRESH_TOKEN_EXPIRE_DAYS
+              value: "7"
