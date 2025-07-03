@@ -15,11 +15,11 @@ RUN if [ -f pyproject.toml ]; then uv pip install --system --no-cache-dir .; \
 
 COPY . .
 
+COPY entrypoint.sh .
+RUN chmod +x ./entrypoint.sh
+
 USER app
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=5 CMD curl -f http://localhost:8000/api/v1/health || exit 1
-
-COPY entrypoint.sh .
-RUN chmod +x ./entrypoint.sh
 
 ENTRYPOINT ["./entrypoint.sh"]
