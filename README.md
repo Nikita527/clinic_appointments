@@ -63,3 +63,6 @@ kubectl port-forward svc/clinic-app 8000:8000
 ## Бонус: CI собирает и пушит Docker-образ
 
 Реализована сборка Docker-образа с помощью GitHub Actions и пуш в мой репозиторий на DockerHub.
+
+## Контакты
+Telegram: @salikov_n
